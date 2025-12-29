@@ -6,3 +6,5 @@ class APIResponse{
         this.statuscode=200
     }
 }
+
+export {APIResponse}
