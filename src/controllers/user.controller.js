@@ -270,4 +270,71 @@ const updateUserCoverImage=asyncHandler(async(req,res)=>{
     return res.status(200).json(new APIResponse(200,"coverImage updated successfully",user))
 })
 
-export {loginUser,registerUser,logOutUser,refreshAcessToken,changeCurrentPassword,getCurrentUserDetails,updateAccountDetails,updateUserAvatar,updateUserCoverImage};
+const getUserChannelDetails=asyncHandler(async(req,res)=>{
+    const {username}=req.params
+    if(!username?.trim()){
+        throw new APIError("Username is required",400);
+    }
+    // const user=await User.find({username})
+    const channel=await User.aggregate([
+        {
+            $match:{
+                username:username?.toLowerCase()
+            }
+        },
+        {
+            $lookup:{
+                from:"subscriptions",
+                loacalField:"_id",
+                foreignField:"channel",
+                as:"subscribers"
+            }
+        },
+        {
+            $lookup:{
+                from:"subscriptions",
+                loacalField:"_id",
+                foreignField:"subscriber",
+                as:"subscribedTo"
+            }
+        },{
+            $addFields:{
+                subscribersCount:{
+                    $size:"$subscribers"
+                },
+                channelsSubscriberToCount:{
+                    $size:"$subscribedTo"
+                },
+                isSubscribed:{
+                    $cond:{
+                        if:{
+                            $in:[req.user?._id,"$subscribers.subscriber"]
+                        },
+                        then:true,
+                        else:false
+                    }
+                }
+            }
+        },
+        {
+            $project:{
+                fullName:1,
+                username:1,
+                subscribersCount:1,
+                channelsSubscriberToCount:1,
+                avatar:1,
+                coverImage:1,
+                email:1,
+                isSubscribed:1,
+            }
+        }
+    ])
+    if(!channel?.length){
+        throw new APIError("User not found",404);
+    }
+    return res.status(200).json(
+        new APIResponse(200,"User channel details fetched successfully",channel[0])
+    )
+})
+
+export {loginUser,registerUser,logOutUser,refreshAcessToken,changeCurrentPassword,getCurrentUserDetails,updateAccountDetails,updateUserAvatar,updateUserCoverImage,getUserChannelDetails};
