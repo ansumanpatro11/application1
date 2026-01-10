@@ -4,8 +4,7 @@ import {User} from "../models/user.model.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { APIResponse } from "../utils/APIResponse.js";
 import jwt from "jsonwebtoken";
-import { use } from "react";
-
+import mongoose from "mongoose";
 
 const generateAccessAndRefreshToken=async(userId)=>{
     try{
@@ -123,7 +122,6 @@ const loginUser=asyncHandler(async(req,res)=>{
         user:loggedInUser,accessToken,refreshToken
     },"User logged in successfully"))
 })
-
 
 const logOutUser=asyncHandler(async(req,res)=>{
     //get user id from req.user
@@ -285,7 +283,7 @@ const getUserChannelDetails=asyncHandler(async(req,res)=>{
         {
             $lookup:{
                 from:"subscriptions",
-                loacalField:"_id",
+                localField:"_id",
                 foreignField:"channel",
                 as:"subscribers"
             }
@@ -293,7 +291,7 @@ const getUserChannelDetails=asyncHandler(async(req,res)=>{
         {
             $lookup:{
                 from:"subscriptions",
-                loacalField:"_id",
+                localField:"_id",
                 foreignField:"subscriber",
                 as:"subscribedTo"
             }
@@ -352,7 +350,7 @@ const getWatchHistory=asyncHandler(async(req,res)=>{
                     as:"watchHistory",
                     pipeline:[
                         {
-                            lookup:{
+                            $lookup:{
                                 from:"users",
                                 localField:"owner",
                                 foreignField:"_id",
