@@ -9,7 +9,7 @@ import { Playlist } from "../models/playlist.model.js";
 const createPlaylist = asyncHandler(async (req, res) => {
     const {name, description} = req.body
     const userId=req.user._id;
-    if(mongoose.Types.ObjectId.isValid(userId)){
+    if(!mongoose.Types.ObjectId.isValid(userId)){
         throw new APIError(401,"invalid user")
     }
     const createdPlaylist=await Playlist.create({

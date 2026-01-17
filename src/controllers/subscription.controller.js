@@ -13,12 +13,12 @@ const toggleSubscription=asyncHandler(async(req,res)=>{
         throw new APIError(400,"invalid channel ID")
     }
     const existingSubscription=await Subscription.findOne({
-        channel:mongoose.Types.ObjectId(channelId),
+        channel:new mongoose.Types.ObjectId(channelId),
         subscriber:userId
     })
     if(existingSubscription){
         await Subscription.deleteOne({
-            channel:mongoose.Types.ObjectId(channelId),
+            channel:new mongoose.Types.ObjectId(channelId),
             subscriber:userId
         })
         return res.status(200).json({
@@ -27,7 +27,7 @@ const toggleSubscription=asyncHandler(async(req,res)=>{
     }
     else{
         await Subscription.create({
-            channel:mongoose.Types.ObjectId(channelId),
+            channel:new mongoose.Types.ObjectId(channelId),
             subscriber:userId
         })
         return res.status(200).json({
@@ -44,11 +44,11 @@ const getUserChannelSubscribers = asyncHandler(async (req, res) => {
     const skip=(page-1)*limit;
     const subscribers=await Subscription.aggregate([
         {
-            $match:{channel:mongoose.Types.ObjectId(channelId)}
+            $match:{channel:new mongoose.Types.ObjectId(channelId)}
         },
           {  $lookup:{
                 from:"users",
-                LocalField:"subscriber",
+                localField:"subscriber",
                 foreignField:"_id",
                 as:"subscriberDetails"
             }
@@ -92,11 +92,11 @@ const getSubscribedChannels = asyncHandler(async (req, res) => {
     const skip=(page-1)*limit;
     const subscribedChannels=await Subscription.aggregate([
         {
-            $match:{subscriber:mongoose.Types.ObjectId(subscriberId)}
+            $match:{subscriber:new mongoose.Types.ObjectId(subscriberId)}
         },{
             $lookup:{
                 from:"users",
-                localField:"subscriber",
+                localField:"channel",
                 foreignField:"_id",
                 as:"subscriberDetails"
             }
@@ -123,7 +123,7 @@ const getSubscribedChannels = asyncHandler(async (req, res) => {
     return res.status(200).json(new APIResponse(200,"Subscribered channels fetched",{
         page,
         limit,
-        totalPages:matchMedia.ceil(totalSubscribedChannels/page),
+        totalPages:Math.ceil(totalSubscribedChannels/limit),
         totalSubscribedChannels,
         subscribedChannels
     }))
