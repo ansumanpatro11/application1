@@ -43,7 +43,7 @@ const addComment=asyncHandler(async(req,res)=>{
 const deleteComment=asyncHandler(async(req,res)=>{
     const {commentID}=req.params;
     const userId=req.user._id;
-    if(!mongoose.Types.ObjectId.isValid(commentID)){
+    if(!commentID || !mongoose.Types.ObjectId.isValid(commentID)){
         throw new APIError(400,"Invalid comment ID provided");
     }
     const comment=await Comment.findById(commentID);
@@ -53,24 +53,28 @@ const deleteComment=asyncHandler(async(req,res)=>{
     if(comment.owner.toString()!==userId.toString()){
         throw new APIError(403,"Unauthorized to delete this comment");
     }
-    await comment.remove();
+    await comment.deleteOne();
     return res.status(200).json(new APIResponse(200,"comment deleted successfully",null));
 })
 
 const updateComment=asyncHandler(async(req,res)=>{
     const {commentID}=req.params;
     const {content}=req.body;
-    const userID=req.user._id;
-    if(!content || !mongoose.Types.ObjectId.isValid(commentID)){
+    const userId=req.user._id;
+    if(!commentID || !content || !mongoose.Types.ObjectId.isValid(commentID)){
         throw new APIError(400,"Invalid data provided");
     }
-    if(commentID.owner.toString()!==userId.toString()){
+    const comment=await Comment.findById(commentID);
+    if(!comment){
+        throw new APIError(404,"Comment not found");
+    }
+    if(comment.owner.toString()!==userId.toString()){
         throw new APIError(403,"Unauthorized to update this comment");
     }
-    const comment=await Comment.findByIdAndUpdate(commentID,{
+    const updatedComment=await Comment.findByIdAndUpdate(commentID,{
         content
     },{new:true});
-    return res.status(200).json(new APIResponse(200,"Comment updated successfully",comment));
+    return res.status(200).json(new APIResponse(200,"Comment updated successfully",updatedComment));
 })
 
 export {getVideoComments,addComment,deleteComment,updateComment};

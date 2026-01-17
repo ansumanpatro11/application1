@@ -6,7 +6,7 @@ const router=Router();
 
 router.use(verifyJWT); //all routes below this middleware are secured
 router.route("/:videoId").get(getVideoComments).post(addComment);
-router.route("/c/:commentId").delete(deleteComment).patch(updateComment);
+router.route("/c/:commentID").delete(deleteComment).patch(updateComment);
 
 
 export default router;
