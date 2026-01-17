@@ -7,7 +7,6 @@ import { User } from "../models/user.model.js";
 
 const createPlaylist = asyncHandler(async (req, res) => {
     const {name, description} = req.body
-
     //TODO: create playlist
 })
 
